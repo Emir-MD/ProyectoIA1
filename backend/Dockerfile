@@ -1,27 +1,24 @@
-# Usa una imagen base que incluya Maven y JDK
+# Fase de compilación
 FROM maven:3.8.6-eclipse-temurin-17 AS build
-
-# Establecer el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar los archivos de configuración de Maven y descargar dependencias
+# Copiar el archivo de configuración y descargar dependencias
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
-# Copiar el código fuente y compilarlo
+# Copiar el código fuente y compilar la aplicación
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Crear la imagen final
+# Fase de ejecución
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# Copiar el JAR generado en la fase anterior
+# Copiar el JAR generado
 COPY --from=build /app/target/*.jar app.jar
 
-# Exponer el puerto 8080
+# Exponer el puerto del backend
 EXPOSE 8080
 
-# Comando para ejecutar la aplicación
+# Ejecutar la aplicación
 CMD ["java", "-jar", "app.jar"]
-
