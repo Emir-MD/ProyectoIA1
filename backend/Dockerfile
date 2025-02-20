@@ -1,24 +1,20 @@
-# Fase de compilación
-FROM maven:3.8.6-eclipse-temurin-17 AS build
+# Usa la imagen oficial de Node.js
+FROM node:18
+
+# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el archivo de configuración y descargar dependencias
-COPY pom.xml .
-RUN mvn dependency:go-offline
+# Copia el package.json y package-lock.json
+COPY package*.json ./
 
-# Copiar el código fuente y compilar la aplicación
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Instala las dependencias
+RUN npm install
 
-# Fase de ejecución
-FROM eclipse-temurin:17-jre
-WORKDIR /app
+# Copia el resto de los archivos de la aplicación
+COPY . .
 
-# Copiar el JAR generado
-COPY --from=build /app/target/*.jar app.jar
+# Expone el puerto en el que corre el backend
+EXPOSE 5000
 
-# Exponer el puerto del backend
-EXPOSE 8080
-
-# Ejecutar la aplicación
-CMD ["java", "-jar", "app.jar"]
+# Comando para iniciar el backend
+CMD ["node", "servidor.js"]
